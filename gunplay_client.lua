@@ -8,7 +8,7 @@ local recoilGroups = {
     [-1569042529] = 0.3, -- GROUP_HEAVY
     [690389602] = 0.05 -- GROUP_UNDEFINED
 }
-
+-- test
 local step = 0
 local tempPitch = 0.0
 local groupHash -- rename this variable, actually holds a specific weapontype's recoil value
