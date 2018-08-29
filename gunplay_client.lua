@@ -8,7 +8,7 @@ local recoilGroups = {
     [-1569042529] = 0.3, -- GROUP_HEAVY
     [690389602] = 0.05 -- GROUP_UNDEFINED
 }
--- test
+
 local step = 0
 local tempPitch = 0.0
 local groupHash -- rename this variable, actually holds a specific weapontype's recoil value
@@ -44,7 +44,7 @@ end)
 
 -- IsPedShooting alone only checks if the ped is firing that very same frame, I need a longer timeframe than that to check, that's where this function comes into play
 function isPlayerFiring() 
-    for i = 0, 10 do
+    for i = 0, 25 do
         Wait(0)
         if IsPedShooting(PlayerPedId()) then
             return true
@@ -58,8 +58,9 @@ function lowerStep()
     if step > 0.0 then
         for i = groupHash, 0, -0.1 do
             local l = GetGameplayCamRelativePitch()
-            SetGameplayCamRelativePitch(l - (0.4 * 4), 0.2)
+            SetGameplayCamRelativePitch(l - 0.1, 0.2)
             step = step - 0.1
+            print(step)
         end
     end
 end
