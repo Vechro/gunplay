@@ -12,6 +12,7 @@ local recoilGroups = {
 local step = 0
 local tempPitch = 0.0
 local groupHash -- rename this variable, actually holds a specific weapontype's recoil value
+local isFiring = false
 
 -- /PRIMARY THREAD/ --
 
@@ -27,7 +28,7 @@ Citizen.CreateThread(function()
             local weapon = GetSelectedPedWeapon(playerPed)
             groupHash = recoilGroups[GetWeapontypeGroup(weapon)]
             if groupHash and groupHash ~= 0 then
-                ShakeGameplayCam("SMALL_EXPLOSION_SHAKE", groupHash / 10)
+                ShakeGameplayCam("MG_RECOIL_SHAKE", groupHash * 3)
                 for i = 0, groupHash, 0.1 do
                     Wait(0)
                     local p = GetGameplayCamRelativePitch()
@@ -43,6 +44,7 @@ end)
 -- /FUNCTIONS/ --
 
 -- IsPedShooting alone only checks if the ped is firing that very same frame, I need a longer timeframe than that to check, that's where this function comes into play
+-- is replaced by a thread
 function isPlayerFiring() 
     for i = 0, 25 do
         Wait(0)
@@ -53,17 +55,19 @@ function isPlayerFiring()
     return false
 end
 
--- Brings down the aim when firing stops, probably doesn't need to be a separate function
-function lowerStep()
-    if step > 0.0 then
-        for i = groupHash, 0, -0.1 do
-            local l = GetGameplayCamRelativePitch()
-            SetGameplayCamRelativePitch(l - 0.1, 0.2)
-            step = step - 0.1
-            print(step)
+-- Sets isFiring to true or false depending on whether the player is firing or not
+Citizen.CreateThread(function()
+    local playerPed = PlayerPedId()
+    while true do
+        Wait(0)
+        local _, ammo = GetAmmoInClip(playerPed, GetSelectedPedWeapon(playerPed), 0)
+        if IsControlPressed(1, 24) and ammo > 0 then
+            isFiring = true
+        else
+            isFiring = false
         end
     end
-end
+end)
 
 -- /SECONDARY THREADS/ --
 
@@ -71,12 +75,17 @@ end
 Citizen.CreateThread(function()
     while true do
         Wait(0)
-        if not isPlayerFiring() then
-            lowerStep()
+        if not isFiring and step > 0.0 then
+            for i = groupHash, 0, -0.1 do
+                local l = GetGameplayCamRelativePitch()
+                SetGameplayCamRelativePitch(l - 2.0, 0.2)
+                Wait(0)
+                step = step - 0.1
+                print(step)
+            end
         end
     end
 end)
-
 
 -- Disables crosshair for all weapons expect sniper rifles, y'know, for added realism, disabled while testing
 Citizen.CreateThread(function()
@@ -88,42 +97,3 @@ Citizen.CreateThread(function()
         end
     end
 end)
-
-
-
---[[
-function hasPlayerNotFiredRecently()
-    local counter = 0
-    for i = 0, 25 do
-        Wait(0)
-        if IsPedShooting(PlayerPedId()) then
-            counter = counter + 1
-        end
-    end
-    if counter == 0 then
-        return true
-    else
-        return false
-    end
-end
-
-Citizen.CreateThread(function()
-    while true do
-        Wait(0)
-        if not isPlayerFiring() then
-            step = 0
-            SetGameplayCamRelativePitch(tempPitch, 0.01)
-        end
-    end
-end)
-
-Citizen.CreateThread(function()
-    while true do
-        Wait(0)
-        SetGameplayCamRelativePitch(tempPitch, 0.2)
-        if hasPlayerNotFiredRecently() then
-            tempPitch = GetGameplayCamRelativePitch()
-        end
-    end
-end)
-]]
