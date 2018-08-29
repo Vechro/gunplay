@@ -10,7 +10,6 @@ local recoilGroups = {
 }
 
 local step = 0
-local tempPitch = 0.0
 local groupHash -- rename this variable, actually holds a specific weapontype's recoil value
 local isFiring = false
 
@@ -45,6 +44,7 @@ end)
 
 -- IsPedShooting alone only checks if the ped is firing that very same frame, I need a longer timeframe than that to check, that's where this function comes into play
 -- is replaced by a thread
+--[[
 function isPlayerFiring() 
     for i = 0, 25 do
         Wait(0)
@@ -54,6 +54,7 @@ function isPlayerFiring()
     end
     return false
 end
+]]
 
 -- Sets isFiring to true or false depending on whether the player is firing or not
 Citizen.CreateThread(function()
@@ -78,7 +79,7 @@ Citizen.CreateThread(function()
         if not isFiring and step > 0.0 then
             for i = groupHash, 0, -0.1 do
                 local l = GetGameplayCamRelativePitch()
-                SetGameplayCamRelativePitch(l - 2.0, 0.2)
+                SetGameplayCamRelativePitch(l - groupHash, 0.2)
                 Wait(0)
                 step = step - 0.1
                 print(step)
